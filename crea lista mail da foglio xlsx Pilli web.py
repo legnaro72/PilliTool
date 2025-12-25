@@ -21,7 +21,7 @@ def get_base64_image(image_path):
 img_bg_base64 = get_base64_image("no.png")
 logo_liguria_path = "Logo Liguria.png"
 
-# 3. CSS Avanzato (Arancione Ultra-Vivace e Grassetto Ovunque)
+# 3. CSS Personalizzato (Arancione Istituzionale Liguria)
 def apply_custom_style():
     bg_style = ""
     if img_bg_base64:
@@ -36,84 +36,78 @@ def apply_custom_style():
         </style>
         """
     
-    st.markdown(bg_style + """
+    # Colore Arancione Liguria (un tono circa #E85D04 o #D64D00)
+    orange_liguria = "#D64D00" 
+    
+    st.markdown(bg_style + f"""
         <style>
-        /* Pannello centrale con opacità per massima leggibilità */
-        .main .block-container {
+        /* Pannello centrale */
+        .main .block-container {{
             background-color: rgba(255, 255, 255, 0.96); 
             padding: 3rem;
             border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.2);
             margin-top: 2rem;
-            border: 3px solid #FF4500; /* Arancione Neon */
-        }
+            border: 1px solid {orange_liguria};
+        }}
 
-        /* CONFIGURAZIONE TESTI ARANCIONE VIVACE E GRASSETTO */
-        /* Colore esadecimale #FF4500 è l'arancione-rosso più visibile (OrangeRed) */
-        
-        h1, h2, h3, h4, p, label, .stMarkdown, span, .stMetric, div[data-testid="stMetricValue"] {
-            color: #FF4500 !important; 
-            font-weight: 900 !important; /* Grassetto massimo */
-            opacity: 1 !important;
-        }
+        /* TESTI IN ARANCIONE ISTITUZIONALE LIGURIA E GRASSETTO */
+        h1, h2, h3, h4, p, label, .stMarkdown, span, [data-testid="stMetricValue"] {{
+            color: {orange_liguria} !important; 
+            font-weight: 800 !important;
+        }}
 
-        /* Titolo principale più grande e marcato */
-        .main-title {
-            font-size: 3rem !important;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        .main-title {{
+            font-size: 2.8rem !important;
             text-align: center;
-            line-height: 1.2;
-        }
+            margin-bottom: 0.2rem;
+        }}
 
-        .subtitle { 
+        .subtitle {{ 
             text-align: center; 
-            font-size: 1.4rem !important;
+            font-size: 1.2rem !important;
             margin-bottom: 2.5rem; 
-            text-transform: uppercase;
-        }
+            letter-spacing: 1px;
+        }}
         
-        /* Area Upload Stilizzata Arancione */
-        [data-testid="stFileUploadDropzone"] {
-            border: 4px dashed #FF4500 !important;
-            background-color: rgba(255, 69, 0, 0.08) !important;
+        /* Area Upload Stilizzata */
+        [data-testid="stFileUploadDropzone"] {{
+            border: 2px dashed {orange_liguria} !important;
+            background-color: rgba(214, 77, 0, 0.03) !important;
             border-radius: 20px !important;
-        }
-        
-        /* Icone e testi dentro l'upload */
-        [data-testid="stFileUploadDropzone"] i, [data-testid="stFileUploadDropzone"] div {
-            color: #FF4500 !important;
-            font-weight: bold !important;
-        }
+        }}
 
-        /* Bottoni Arancione Fluorescente */
-        .stButton>button {
-            background: linear-gradient(135deg, #FF4500 0%, #FF8C00 100%);
+        /* Bottoni */
+        .stButton>button {{
+            background-color: {orange_liguria} !important;
             color: white !important;
-            border-radius: 15px;
-            padding: 1rem;
-            font-weight: 900 !important;
+            border-radius: 12px;
+            padding: 0.8rem;
+            font-weight: bold;
             width: 100%;
             border: none;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
-        }
+            transition: 0.3s;
+        }}
+        .stButton>button:hover {{
+            background-color: #A33A00 !important; /* Arancione più scuro al passaggio */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }}
 
-        /* Input Selectbox e Textarea */
-        .stSelectbox div, textarea {
-            border: 2px solid #FF4500 !important;
-            font-weight: bold !important;
-            color: #333 !important; /* Testo inserito scuro per leggerlo bene */
-        }
+        /* Area Risultati */
+        textarea {{
+            border: 2px solid {orange_liguria} !important;
+            border-radius: 10px !important;
+            color: #333 !important;
+            font-weight: normal !important;
+        }}
 
-        /* Footer */
-        .footer {
+        .footer {{
             text-align: center;
             margin-top: 3rem;
-            border-top: 2px solid #FF4500;
             padding-top: 1.5rem;
-            letter-spacing: 1px;
-        }
+            border-top: 1px solid rgba(214, 77, 0, 0.2);
+            color: {orange_liguria};
+        }}
         </style>
     """, unsafe_allow_html=True)
 
@@ -126,17 +120,17 @@ with col_l2:
         st.image(logo_liguria_path, use_column_width=True)
 
 st.markdown("<h1 class='main-title'>📬 EMAIL EXTRACTOR PRO</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>REGIONE LIGURIA - ELABORAZIONE LISTE CONTATTI</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>REGIONE LIGURIA - GESTIONE CONTATTI</p>", unsafe_allow_html=True)
 
-# GESTIONE STATO SESSIONE
+# GESTIONE STATO
 if 'file_caricato' not in st.session_state:
     st.session_state.file_caricato = False
 if 'elaborazione_conclusa' not in st.session_state:
     st.session_state.elaborazione_conclusa = False
 
-# STEP 1: CARICAMENTO (Scompare dopo l'invio)
+# STEP 1: CARICAMENTO
 if not st.session_state.file_caricato:
-    st.markdown("### 📤 CARICA IL DOCUMENTO EXCEL")
+    st.markdown("### 📤 TRASCINA IL FILE EXCEL (.XLSX)")
     uploaded_file = st.file_uploader("", type="xlsx")
     if uploaded_file is not None:
         try:
@@ -144,24 +138,24 @@ if not st.session_state.file_caricato:
             st.session_state.file_caricato = True
             st.rerun()
         except Exception as e:
-            st.error(f"ERRORE CRITICO: {e}. VERIFICA IL FILE REQUIREMENTS.TXT")
+            st.error(f"ERRORE DI CARICAMENTO: {e}")
 
-# STEP 2: CONFIGURAZIONE (Scompare dopo l'elaborazione)
+# STEP 2: CONFIGURAZIONE
 if st.session_state.file_caricato and not st.session_state.elaborazione_conclusa:
-    st.markdown("### ✅ FILE ANALIZZATO: SCEGLI LA COLONNA")
+    st.markdown("### 🎯 SELEZIONA LA COLONNA DELLE EMAIL")
     colonna = st.selectbox("", st.session_state.df.columns, index=min(3, len(st.session_state.df.columns)-1))
     
     st.write("")
-    if st.button("🚀 AVVIA ELABORAZIONE DATI"):
+    if st.button("🚀 AVVIA ELABORAZIONE"):
         emails_raw = st.session_state.df[colonna].dropna().astype(str)
         seen = set()
         unique_emails = []
-        log_entries = [f"--- REPORT {datetime.now().strftime('%H:%M')} ---"]
+        log_entries = [f"--- REPORT {datetime.now().strftime('%d/%m/%Y %H:%M')} ---"]
 
         for idx, email in emails_raw.items():
             clean_email = email.strip().lower()
             if clean_email in seen:
-                log_entries.append(f"❌ RIGA {idx+2}: {clean_email} (DUPLICATO)")
+                log_entries.append(f"❌ Rimosso duplicato: {clean_email}")
             else:
                 seen.add(clean_email)
                 unique_emails.append(clean_email)
@@ -175,25 +169,22 @@ if st.session_state.file_caricato and not st.session_state.elaborazione_conclusa
         st.session_state.elaborazione_conclusa = True
         st.rerun()
 
-# STEP 3: RISULTATO (Visualizzazione finale dinamica)
+# STEP 3: RISULTATO FINALE
 if st.session_state.elaborazione_conclusa:
-    st.balloons()
-    st.markdown("## 🎊 ELABORAZIONE COMPLETATA!")
+    st.markdown("### 📋 COPIA GLI INDIRIZZI (CTRL + A)")
+    st.text_area(label="", value=st.session_state.risultato, height=150)
     
     m1, m2 = st.columns(2)
     m1.metric("EMAIL UNICHE", st.session_state.count_uniche)
-    m2.metric("DUPLICATI RIMOSSI", st.session_state.count_duplicati)
-    
-    st.markdown("### 📋 SELEZIONA TUTTO (CTRL + A) E COPIA")
-    st.text_area(label="", value=st.session_state.risultato, height=150)
+    m2.metric("DUPLICATI ELIMINATI", st.session_state.count_duplicati)
     
     st.divider()
     
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.download_button("📥 SCARICA LISTA", data=st.session_state.risultato, file_name="email_pulite.txt")
+        st.download_button("📥 SCARICA TXT", data=st.session_state.risultato, file_name="email_pulite.txt")
     with c2:
-        st.download_button("🧾 SCARICA LOG", data=st.session_state.log, file_name="log_errori.txt")
+        st.download_button("🧾 SCARICA LOG", data=st.session_state.log, file_name="log_duplicati.txt")
     with c3:
         if st.button("🔄 NUOVA ANALISI"):
             for key in list(st.session_state.keys()):
@@ -201,12 +192,4 @@ if st.session_state.elaborazione_conclusa:
             st.rerun()
 
 # Footer
-st.markdown(
-    """
-    <div class="footer">
-        <b>REGIONE LIGURIA</b><br>
-        <b>SISTEMA GESTIONE MAILING LIST ISTITUZIONALE</b>
-    </div>
-    """, 
-    unsafe_allow_html=True
-)
+st.markdown("<div class='footer'><b>REGIONE LIGURIA</b></div>", unsafe_allow_html=True)

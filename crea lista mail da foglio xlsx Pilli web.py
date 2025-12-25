@@ -12,21 +12,22 @@ st.set_page_config(
 )
 
 # --- DEFINIZIONE COLORI GLOBALI ---
-orange_req = "rgb(255, 165, 0)"  # Arancione Pilli (255, 165, 0)
+orange_req = "rgb(255, 165, 0)"  # Arancione Pilli
 green_liguria = "#1E8449"         # Verde Istituzionale Liguria
 
-# 2. Funzione per codificare le immagini in Base64
-def get_base64_image(image_path):
-    if os.path.exists(image_path):
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
+# 2. Funzioni Base64 (Immagini e Audio)
+def get_base64_file(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
     return None
 
-img_bg_base64 = get_base64_image("no.png")
-pilly_base64 = get_base64_image("pilli.jpg")
+img_bg_base64 = get_base64_file("no.png")
+pilly_base64 = get_base64_file("pilli.jpg")
 logo_liguria_path = "Logo Liguria.png"
+audio_path = "C'e' chi dice no.mp3" # Nome del file audio
 
-# 3. CSS Personalizzato
+# 3. CSS Personalizzato (Stile Originale Pilly)
 def apply_custom_style():
     bg_style = ""
     if img_bg_base64:
@@ -61,7 +62,7 @@ def apply_custom_style():
             margin-bottom: 0.5rem;
         }}
 
-        /* Badge Istruzioni: Sfondo Verde, Testo Arancione */
+        /* Badge Istruzioni */
         .instruction-badge {{
             background-color: {green_liguria} !important;
             border: 2px solid {orange_req};
@@ -75,19 +76,19 @@ def apply_custom_style():
             text-align: center;
         }}
         
-        /* NUOVO CSS PER IL BOX DI TESTO ISTRUZIONI (Stile Pilli) */
+        /* Box Istruzioni Copia/Incolla */
         .copy-text-box {{
-            background-color: #fff8e1; /* Sfondo crema molto chiaro */
+            background-color: #fff8e1;
             border-left: 6px solid {orange_req};
             padding: 15px;
             margin-bottom: 10px;
-            color: #d97706; /* Arancione scuro per leggibilità */
+            color: #d97706;
             font-size: 0.95rem;
             border-radius: 5px;
             line-height: 1.5;
         }}
 
-        /* Bottoni Verdi con testo bianco */
+        /* Bottoni */
         div.stButton > button, .stDownloadButton > button {{
             background-color: {green_liguria} !important;
             color: white !important;
@@ -99,7 +100,7 @@ def apply_custom_style():
             border: 1px solid {orange_req};
         }}
         
-        /* Metriche Arancioni */
+        /* Metriche */
         [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{
             color: {orange_req} !important;
             font-weight: 900 !important;
@@ -123,7 +124,7 @@ if 'christmas_message_shown' not in st.session_state:
     st.session_state.christmas_message_shown = False
 
 if not st.session_state.christmas_message_shown:
-    st.snow() # Fiocchi di neve che cadono ❄️
+    st.snow() 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if pilly_base64:
@@ -131,8 +132,6 @@ if not st.session_state.christmas_message_shown:
                 f'<div style="text-align: center;"><img src="data:image/jpeg;base64,{pilly_base64}" width="100%" style="border-radius: 25px; border: 5px solid {orange_req}; box-shadow: 0 0 20px {orange_req};"></div>', 
                 unsafe_allow_html=True
             )
-        else:
-            st.warning("⚠️ Immagine 'pilli.jpg' non trovata.")
             
         st.markdown(f"""
             <div style='text-align:center; margin-top:30px;'>
@@ -153,6 +152,26 @@ if not st.session_state.christmas_message_shown:
             st.rerun()
     st.stop()
 
+# --- LOGICA AUDIO DI BACKGROUND ---
+# Posizioniamo il selettore in alto a destra o nella sidebar
+with st.sidebar:
+    st.markdown("### 🎵 Controllo Musica")
+    audio_enabled = st.checkbox("Attiva Musica 'C'è chi dice no'", value=True)
+
+if audio_enabled:
+    audio_b64 = get_base64_file(audio_path)
+    if audio_b64:
+        # Inseriamo un tag audio HTML invisibile che va in autoplay e loop
+        audio_html = f"""
+            <audio autoplay loop>
+            <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+            Your browser does not support the audio element.
+            </audio>
+        """
+        st.markdown(audio_html, unsafe_allow_html=True)
+    else:
+        st.sidebar.warning(f"File audio '{audio_path}' non trovato.")
+
 # --- INTERFACCIA APP PRINCIPALE ---
 col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
 with col_l2:
@@ -170,11 +189,11 @@ if 'elaborazione_conclusa' not in st.session_state:
 # STEP 1: UPLOAD
 if not st.session_state.file_caricato:
     st.markdown(f'<div class="instruction-badge">🎅 CARICA IL FILE EXCEL DI NATALE 🎄</div>', unsafe_allow_html=True)
-    # MODIFICA IMPORTANTE: Aggiunto type=["xlsx", "xls"] per compatibilità Android
+    # Fix per Android: type list estesa
     uploaded_file = st.file_uploader("", type=["xlsx", "xls"])
     if uploaded_file is not None:
         try:
-            st.session_state.df = pd.read_excel(uploaded_file) # engine='openpyxl' rimosso per max compatibilità o lasciato default
+            st.session_state.df = pd.read_excel(uploaded_file)
             st.session_state.file_caricato = True
             st.rerun()
         except Exception as e:
@@ -213,7 +232,7 @@ if st.session_state.elaborazione_conclusa:
     st.balloons()
     st.markdown(f'<div class="instruction-badge">🎁 LISTA PRONTA! COPIA E INCOLLA 🎁</div>', unsafe_allow_html=True)
     
-    # --- NUOVA BOX ISTRUZIONI AGGIUNTA QUI (Design Integrato) ---
+    # BOX ISTRUZIONI AGGIUNTO
     st.markdown(f"""
         <div class="copy-text-box">
             <b>ISTRUZIONI RAPIDE:</b><br>
@@ -221,7 +240,6 @@ if st.session_state.elaborazione_conclusa:
             Vai sul client di posta e premi <b>Control+V</b> per incollare la lista delle mail.
         </div>
     """, unsafe_allow_html=True)
-    # -------------------------------------------------------------
 
     st.text_area(label="", value=st.session_state.risultato, height=180)
     

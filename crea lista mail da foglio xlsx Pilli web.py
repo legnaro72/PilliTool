@@ -11,7 +11,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. Funzione per codificare lo sfondo in Base64
+# 2. Funzione per codificare le immagini in Base64
 def get_base64_image(image_path):
     if os.path.exists(image_path):
         with open(image_path, "rb") as img_file:
@@ -20,8 +20,9 @@ def get_base64_image(image_path):
 
 img_bg_base64 = get_base64_image("no.png")
 logo_liguria_path = "Logo Liguria.png"
+pilly_ico_path = "pilly.ico" # Assicurati che 'pilly.ico' sia nella stessa directory
 
-# 3. CSS Personalizzato (Titolo Arancione 255,165,0 e Badge Sfondo Verde)
+# 3. CSS Personalizzato (Colori e Logica Modificati)
 def apply_custom_style():
     bg_style = ""
     if img_bg_base64:
@@ -51,14 +52,15 @@ def apply_custom_style():
             margin-top: 2rem;
         }}
 
-        /* TITOLO PRINCIPALE ARANCIONE */
-        .main-title {{
+        /* TITOLO PRINCIPALE E SOTTOTITOLO ARANCIONE */
+        .main-title, .app-subtitle {{
             color: {orange_req} !important;
             font-weight: 900 !important;
             text-align: center;
-            font-size: 3rem !important;
             margin-bottom: 0.5rem;
         }}
+        .main-title {{ font-size: 3rem !important; }}
+        .app-subtitle {{ font-size: 1.2rem; }}
 
         /* BADGE ISTRUZIONI (Sfondo Verde, Testo Arancione) */
         .instruction-badge {{
@@ -66,7 +68,7 @@ def apply_custom_style():
             border: 2px solid {orange_req};
             padding: 12px 20px;
             border-radius: 10px;
-            color: {orange_req} !important;
+            color: {orange_req} !important; /* Testo arancione */
             font-weight: 900;
             margin-bottom: 20px;
             text-transform: uppercase;
@@ -94,24 +96,46 @@ def apply_custom_style():
             font-family: 'Consolas', monospace !important;
         }}
 
-        /* Metriche */
+        /* Metriche (Scritte Arancioni) */
         [data-testid="stMetricValue"] {{
-            color: {orange_req} !important;
+            color: {orange_req} !important; /* Valori metriche arancioni */
+            font-weight: 900 !important;
+        }}
+        [data-testid="stMetricLabel"] {{
+            color: {orange_req} !important; /* Etichette metriche arancioni */
             font-weight: 900 !important;
         }}
 
         .footer {{
             text-align: center;
             margin-top: 3rem;
-            color: {green_liguria};
+            color: {orange_req}; /* Footer arancione */
             font-weight: bold;
-            border-top: 1px solid #eee;
+            border-top: 1px solid {green_liguria};
             padding-top: 1rem;
         }}
         </style>
     """, unsafe_allow_html=True)
 
 apply_custom_style()
+
+# --- MESSAGGIO INIZIALE DI BUON NATALE ---
+if 'christmas_message_shown' not in st.session_state:
+    st.session_state.christmas_message_shown = False
+
+if not st.session_state.christmas_message_shown:
+    st.empty() # Pulisce lo schermo per il messaggio
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if os.path.exists(pilly_ico_path):
+            st.image(pilly_ico_path, use_column_width=True)
+        st.markdown(f"<h1 style='text-align:center; color:{orange_req}; font-weight:900;'>BUON NATALE PILLI!!</h1>", unsafe_allow_html=True)
+        if st.button("Continua nell'app"):
+            st.session_state.christmas_message_shown = True
+            st.rerun()
+    st.stop() # Ferma l'esecuzione del resto dell'app
+
+# --- Se il messaggio di Natale è stato mostrato, prosegui con l'app ---
 
 # 4. Header
 col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
@@ -120,9 +144,9 @@ with col_l2:
         st.image(logo_liguria_path, use_column_width=True)
 
 st.markdown(f"<h1 class='main-title'>📬 EMAIL EXTRACTOR PRO</h1>", unsafe_allow_html=True)
-st.markdown(f"<p style='text-align:center; color:rgb(255, 165, 0); font-weight:bold;'>REGIONE LIGURIA</p>", unsafe_allow_html=True)
+st.markdown(f"<p class='app-subtitle'>REGIONE LIGURIA - GESTIONE LISTE</p>", unsafe_allow_html=True)
 
-# STATO SESSIONE
+# STATO SESSIONE per la logica dell'app
 if 'file_caricato' not in st.session_state:
     st.session_state.file_caricato = False
 if 'elaborazione_conclusa' not in st.session_state:
@@ -190,6 +214,7 @@ if st.session_state.elaborazione_conclusa:
         if st.button("🔄 RE-START"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
+            st.session_state.christmas_message_shown = False # Resetta il messaggio di Natale
             st.rerun()
 
 st.markdown(f"<div class='footer'>REGIONE LIGURIA</div>", unsafe_allow_html=True)

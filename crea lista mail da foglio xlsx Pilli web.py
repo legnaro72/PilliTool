@@ -46,7 +46,7 @@ def apply_custom_style():
         <style>
         /* Contenitore principale */
         .main .block-container {{
-            background-color: rgba(255, 255, 255, 0.98); 
+            background-color: rgba(255, 255, 255, 0.78); 
             padding: 3rem;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);

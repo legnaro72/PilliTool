@@ -11,6 +11,10 @@ st.set_page_config(
     layout="centered"
 )
 
+# --- DEFINIZIONE COLORI GLOBALI ---
+orange_req = "rgb(255, 165, 0)"  # L'arancione richiesto
+green_liguria = "#1E8449"         # Verde istituzionale
+
 # 2. Funzione per codificare le immagini in Base64
 def get_base64_image(image_path):
     if os.path.exists(image_path):
@@ -20,9 +24,9 @@ def get_base64_image(image_path):
 
 img_bg_base64 = get_base64_image("no.png")
 logo_liguria_path = "Logo Liguria.png"
-pilly_ico_path = "pilly.ico" # Assicurati che 'pilly.ico' sia nella stessa directory
+pilly_ico_path = "pilly.ico"
 
-# 3. CSS Personalizzato (Colori e Logica Modificati)
+# 3. CSS Personalizzato
 def apply_custom_style():
     bg_style = ""
     if img_bg_base64:
@@ -37,13 +41,8 @@ def apply_custom_style():
         </style>
         """
     
-    # Colori richiesti
-    orange_req = "rgb(255, 165, 0)"
-    green_liguria = "#1E8449" 
-    
     st.markdown(bg_style + f"""
         <style>
-        /* Pannello centrale */
         .main .block-container {{
             background-color: rgba(255, 255, 255, 0.98); 
             padding: 3rem;
@@ -52,32 +51,27 @@ def apply_custom_style():
             margin-top: 2rem;
         }}
 
-        /* TITOLO PRINCIPALE E SOTTOTITOLO ARANCIONE */
-        .main-title, .app-subtitle {{
+        .main-title {{
             color: {orange_req} !important;
             font-weight: 900 !important;
             text-align: center;
+            font-size: 3rem !important;
             margin-bottom: 0.5rem;
         }}
-        .main-title {{ font-size: 3rem !important; }}
-        .app-subtitle {{ font-size: 1.2rem; }}
 
-        /* BADGE ISTRUZIONI (Sfondo Verde, Testo Arancione) */
         .instruction-badge {{
             background-color: {green_liguria} !important;
             border: 2px solid {orange_req};
             padding: 12px 20px;
             border-radius: 10px;
-            color: {orange_req} !important; /* Testo arancione */
+            color: {orange_req} !important;
             font-weight: 900;
             margin-bottom: 20px;
             text-transform: uppercase;
             display: block;
             text-align: center;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
         }}
 
-        /* TASTI (VERDI CON SCRITTA BIANCA) */
         div.stButton > button, .stDownloadButton > button {{
             background-color: {green_liguria} !important;
             color: white !important;
@@ -89,27 +83,20 @@ def apply_custom_style():
             border: 1px solid {orange_req};
         }}
         
-        /* Area Risultati */
         textarea {{
             border: 2px solid {green_liguria} !important;
             border-radius: 10px !important;
-            font-family: 'Consolas', monospace !important;
         }}
 
-        /* Metriche (Scritte Arancioni) */
-        [data-testid="stMetricValue"] {{
-            color: {orange_req} !important; /* Valori metriche arancioni */
-            font-weight: 900 !important;
-        }}
-        [data-testid="stMetricLabel"] {{
-            color: {orange_req} !important; /* Etichette metriche arancioni */
+        [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{
+            color: {orange_req} !important;
             font-weight: 900 !important;
         }}
 
         .footer {{
             text-align: center;
             margin-top: 3rem;
-            color: {orange_req}; /* Footer arancione */
+            color: {orange_req};
             font-weight: bold;
             border-top: 1px solid {green_liguria};
             padding-top: 1rem;
@@ -124,29 +111,25 @@ if 'christmas_message_shown' not in st.session_state:
     st.session_state.christmas_message_shown = False
 
 if not st.session_state.christmas_message_shown:
-    st.empty() # Pulisce lo schermo per il messaggio
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if os.path.exists(pilly_ico_path):
             st.image(pilly_ico_path, use_column_width=True)
         st.markdown(f"<h1 style='text-align:center; color:{orange_req}; font-weight:900;'>BUON NATALE PILLI!!</h1>", unsafe_allow_html=True)
-        if st.button("Continua nell'app"):
+        if st.button("ENTRA NELL'APP"):
             st.session_state.christmas_message_shown = True
             st.rerun()
-    st.stop() # Ferma l'esecuzione del resto dell'app
+    st.stop()
 
-# --- Se il messaggio di Natale è stato mostrato, prosegui con l'app ---
-
-# 4. Header
+# --- APP PRINCIPALE ---
 col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
 with col_l2:
     if os.path.exists(logo_liguria_path):
         st.image(logo_liguria_path, use_column_width=True)
 
 st.markdown(f"<h1 class='main-title'>📬 EMAIL EXTRACTOR PRO</h1>", unsafe_allow_html=True)
-st.markdown(f"<p class='app-subtitle'>REGIONE LIGURIA - GESTIONE LISTE</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align:center; color:{orange_req}; font-weight:bold;'>REGIONE LIGURIA - GESTIONE LISTE</p>", unsafe_allow_html=True)
 
-# STATO SESSIONE per la logica dell'app
 if 'file_caricato' not in st.session_state:
     st.session_state.file_caricato = False
 if 'elaborazione_conclusa' not in st.session_state:
@@ -169,7 +152,6 @@ if st.session_state.file_caricato and not st.session_state.elaborazione_conclusa
     st.markdown(f'<div class="instruction-badge">🎯 SELEZIONA LA COLONNA EMAIL</div>', unsafe_allow_html=True)
     colonna = st.selectbox("", st.session_state.df.columns, index=min(3, len(st.session_state.df.columns)-1))
     
-    st.write("")
     if st.button("🚀 AVVIA ELABORAZIONE DATI"):
         emails_raw = st.session_state.df[colonna].dropna().astype(str)
         seen = set()
@@ -214,7 +196,6 @@ if st.session_state.elaborazione_conclusa:
         if st.button("🔄 RE-START"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
-            st.session_state.christmas_message_shown = False # Resetta il messaggio di Natale
             st.rerun()
 
 st.markdown(f"<div class='footer'>REGIONE LIGURIA</div>", unsafe_allow_html=True)

@@ -21,7 +21,7 @@ def get_base64_image(image_path):
 img_bg_base64 = get_base64_image("no.png")
 logo_liguria_path = "Logo Liguria.png"
 
-# 3. CSS Personalizzato (Arancione RGB 255,165,0 e Tasti Verdi)
+# 3. CSS Personalizzato (Titolo Arancione 255,165,0 e Badge Sfondo Verde)
 def apply_custom_style():
     bg_style = ""
     if img_bg_base64:
@@ -36,9 +36,9 @@ def apply_custom_style():
         </style>
         """
     
-    # Colore Arancione richiesto e Verde Istituzionale per i tasti
+    # Colori richiesti
     orange_req = "rgb(255, 165, 0)"
-    green_btn = "#1E8449" 
+    green_liguria = "#1E8449" 
     
     st.markdown(bg_style + f"""
         <style>
@@ -51,47 +51,45 @@ def apply_custom_style():
             margin-top: 2rem;
         }}
 
-        /* BADGE ISTRUZIONI (Sfondo leggero, Bordo e Testo Arancione richiesto) */
+        /* TITOLO PRINCIPALE ARANCIONE */
+        .main-title {{
+            color: {orange_req} !important;
+            font-weight: 900 !important;
+            text-align: center;
+            font-size: 3rem !important;
+            margin-bottom: 0.5rem;
+        }}
+
+        /* BADGE ISTRUZIONI (Sfondo Verde, Testo Arancione) */
         .instruction-badge {{
-            background-color: rgba(255, 165, 0, 0.05);
+            background-color: {green_liguria} !important;
             border: 2px solid {orange_req};
             padding: 12px 20px;
             border-radius: 10px;
-            color: {orange_req};
+            color: {orange_req} !important;
             font-weight: 900;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-transform: uppercase;
             display: block;
             text-align: center;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
         }}
 
-        h1 {{ 
-            color: {green_btn} !important; 
-            font-weight: 900 !important; 
-            text-align: center;
-        }}
-
-        /* TASTI (TUTTI VERDI CON SCRITTA BIANCA) */
+        /* TASTI (VERDI CON SCRITTA BIANCA) */
         div.stButton > button, .stDownloadButton > button {{
-            background-color: {green_btn} !important;
+            background-color: {green_liguria} !important;
             color: white !important;
             border-radius: 8px;
             padding: 0.8rem;
             font-weight: bold !important;
             font-size: 1.1rem !important;
             width: 100%;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid {orange_req};
         }}
         
-        div.stButton > button:hover, .stDownloadButton > button:hover {{
-            background-color: #145A32 !important;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-        }}
-
         /* Area Risultati */
         textarea {{
-            border: 2px solid {orange_req} !important;
+            border: 2px solid {green_liguria} !important;
             border-radius: 10px !important;
             font-family: 'Consolas', monospace !important;
         }}
@@ -105,7 +103,7 @@ def apply_custom_style():
         .footer {{
             text-align: center;
             margin-top: 3rem;
-            color: #444;
+            color: {green_liguria};
             font-weight: bold;
             border-top: 1px solid #eee;
             padding-top: 1rem;
@@ -121,7 +119,8 @@ with col_l2:
     if os.path.exists(logo_liguria_path):
         st.image(logo_liguria_path, use_column_width=True)
 
-st.markdown("<h1>📬 EMAIL EXTRACTOR PRO</h1>", unsafe_allow_html=True)
+st.markdown(f"<h1 class='main-title'>📬 EMAIL EXTRACTOR PRO</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align:center; color:rgb(255, 165, 0); font-weight:bold;'>REGIONE LIGURIA</p>", unsafe_allow_html=True)
 
 # STATO SESSIONE
 if 'file_caricato' not in st.session_state:
@@ -131,7 +130,7 @@ if 'elaborazione_conclusa' not in st.session_state:
 
 # STEP 1: CARICAMENTO
 if not st.session_state.file_caricato:
-    st.markdown(f'<div class="instruction-badge">📂 CARICA IL FILE EXCEL</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="instruction-badge">📂 CARICA IL DOCUMENTO EXCEL</div>', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("", type="xlsx")
     if uploaded_file is not None:
         try:
@@ -143,11 +142,11 @@ if not st.session_state.file_caricato:
 
 # STEP 2: CONFIGURAZIONE
 if st.session_state.file_caricato and not st.session_state.elaborazione_conclusa:
-    st.markdown(f'<div class="instruction-badge">🎯 SCEGLI LA COLONNA EMAIL</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="instruction-badge">🎯 SELEZIONA LA COLONNA EMAIL</div>', unsafe_allow_html=True)
     colonna = st.selectbox("", st.session_state.df.columns, index=min(3, len(st.session_state.df.columns)-1))
     
     st.write("")
-    if st.button("🚀 AVVIA ELABORAZIONE"):
+    if st.button("🚀 AVVIA ELABORAZIONE DATI"):
         emails_raw = st.session_state.df[colonna].dropna().astype(str)
         seen = set()
         unique_emails = []
@@ -193,4 +192,4 @@ if st.session_state.elaborazione_conclusa:
                 del st.session_state[key]
             st.rerun()
 
-st.markdown("<div class='footer'>REGIONE LIGURIA</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='footer'>REGIONE LIGURIA</div>", unsafe_allow_html=True)

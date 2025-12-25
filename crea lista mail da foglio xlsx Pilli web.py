@@ -21,7 +21,7 @@ def get_base64_image(image_path):
 img_bg_base64 = get_base64_image("no.png")
 logo_liguria_path = "Logo Liguria.png"
 
-# 3. CSS Avanzato
+# 3. CSS ORIGINALE RIPRISTINATO + Integrazioni
 def apply_custom_style():
     bg_style = ""
     if img_bg_base64:
@@ -38,48 +38,72 @@ def apply_custom_style():
     
     st.markdown(bg_style + """
         <style>
+        /* Pannello centrale originale */
         .main .block-container {
-            background-color: rgba(255, 255, 255, 0.90);
-            padding: 2rem;
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            margin-top: 1rem;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
+        /* Titoli Istituzionali */
+        h1 { color: #166534 !important; font-weight: 800 !important; text-align: center; }
+        .subtitle { text-align: center; color: #15803d; font-style: italic; margin-bottom: 2rem; }
+        
+        /* Area Upload (Ottimizzata per Android ma con tuo stile) */
         [data-testid="stFileUploadDropzone"] {
             border: 2px dashed #166534 !important;
             background-color: rgba(22, 101, 52, 0.05) !important;
-            min-height: 180px;
+            border-radius: 15px !important;
+            padding: 2rem !important;
         }
 
-        h1 { color: #166534 !important; font-size: 1.8rem !important; text-align: center; }
-        .subtitle { text-align: center; color: #15803d; font-style: italic; }
-        
-        /* Stile per le istruzioni di copia */
-        .copy-instructions {
-            background-color: #f0fdf4;
-            border-left: 5px solid #166534;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            color: #14532d;
-            margin-bottom: 10px;
-        }
-
+        /* Bottoni Originali */
         .stButton>button {
             background: linear-gradient(135deg, #166534 0%, #15803d 100%);
             color: white !important;
             border-radius: 12px;
-            height: 3.5rem;
+            padding: 0.8rem;
             font-weight: bold;
             width: 100%;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(22, 101, 52, 0.3);
         }
 
+        /* Box Istruzioni Arancione/Istituzionale */
+        .copy-instructions {
+            background-color: #fff7ed;
+            border-left: 5px solid #f97316; /* Arancione vivace */
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #7c2d12;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        /* Box di testo Risultato Originale */
+        textarea {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+            font-family: 'Consolas', monospace !important;
+            border: 2px solid #166534 !important;
+            border-radius: 10px !important;
+        }
+
+        /* Footer */
         .footer {
             text-align: center;
-            margin-top: 2rem;
-            font-size: 0.8rem;
-            color: #666;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            color: #444;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -87,38 +111,33 @@ def apply_custom_style():
 apply_custom_style()
 
 # 4. Header Logo
-col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
+col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
 with col_l2:
     if os.path.exists(logo_liguria_path):
         st.image(logo_liguria_path, use_column_width=True)
 
 st.markdown("<h1>📬 EMAIL EXTRACTOR PRO</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>Regione Liguria - Gestione Liste</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Regione Liguria - Elaborazione Liste Contatti</p>", unsafe_allow_html=True)
 
-# --- LOGICA ---
+# --- LOGICA DI NAVIGAZIONE ---
 if 'file_elaborato' not in st.session_state:
     st.session_state.file_elaborato = False
 
-# PASSO 1: CARICAMENTO
+# PASSO 1: CARICAMENTO (Con supporto esteso Android)
 if 'df' not in st.session_state:
     st.markdown("### 📤 Caricamento Documento")
-    uploaded_file = st.file_uploader(
-        "Seleziona il file Excel (.xlsx o .xls)", 
-        type=["xlsx", "xls"]
-    )
+    uploaded_file = st.file_uploader("Trascina qui il tuo file Excel istituzionale", type=["xlsx", "xls"])
     if uploaded_file:
-        try:
-            st.session_state.df = pd.read_excel(uploaded_file)
-            st.rerun()
-        except Exception as e:
-            st.error(f"Errore nel caricamento del file: {e}")
+        st.session_state.df = pd.read_excel(uploaded_file)
+        st.rerun()
 
 # PASSO 2: CONFIGURAZIONE
 if 'df' in st.session_state and not st.session_state.file_elaborato:
-    st.info(f"✅ File caricato: {len(st.session_state.df)} righe.", icon="📂")
-    colonna = st.selectbox("Seleziona la colonna email:", st.session_state.df.columns)
+    st.info(f"✅ File pronto: {len(st.session_state.df)} righe rilevate.", icon="📂")
+    st.markdown("### 🎯 Selezione Colonna")
+    colonna = st.selectbox("Scegli la colonna che contiene gli indirizzi:", st.session_state.df.columns)
     
-    if st.button("🚀 ELABORA LISTA"):
+    if st.button("🚀 ELABORA E GENERA LISTA"):
         emails_raw = st.session_state.df[colonna].dropna().astype(str)
         seen = set()
         unique_emails = []
@@ -144,35 +163,43 @@ if 'df' in st.session_state and not st.session_state.file_elaborato:
 # PASSO 3: RISULTATO FINALE
 if st.session_state.file_elaborato:
     st.balloons()
-    st.success("✨ Elaborazione completata!")
+    st.success("✨ Elaborazione completata con successo!")
     
-    c1, c2 = st.columns(2)
-    c1.metric("Email Uniche", st.session_state.count_uniche)
-    c2.metric("Duplicati Rimossi", st.session_state.count_duplicati)
+    col_res1, col_res2 = st.columns(2)
+    col_res1.metric("Email Uniche", st.session_state.count_uniche)
+    col_res2.metric("Duplicati Rimossi", st.session_state.count_duplicati)
     
-    # --- NUOVA SEZIONE ISTRUZIONI ---
     st.markdown("### 🎁 LISTA PRONTA! COPIA E INCOLLA")
+    # Inserimento del box istruzioni con lo stile arancione richiesto
     st.markdown("""
         <div class="copy-instructions">
-            <b>Istruzioni:</b> Clicca nel box qui sotto e premi <b>Ctrl+A</b> per selezionare tutto, 
-            poi <b>Ctrl+C</b> per copiare. Infine, vai sul tuo client di posta e premi 
-            <b>Ctrl+V</b> per incollare la lista.
+            💡 <b>Procedura veloce:</b> Clicca nella message box qui sotto e premi <b>Control+A</b> per selezionare tutti gli indirizzi, 
+            poi <b>Control+C</b> per copiarli. Vai sul tuo client di posta e premi <b>Control+V</b> per incollare la lista.
         </div>
     """, unsafe_allow_html=True)
     
-    st.text_area("Indirizzi pronti:", value=st.session_state.risultato, height=200)
+    st.text_area(label="Indirizzi pronti per l'invio:", value=st.session_state.risultato, height=150)
     
     st.divider()
     
-    col_dl1, col_dl2, col_dl3 = st.columns(3)
-    with col_dl1:
-        st.download_button("📥 Scarica TXT", data=st.session_state.risultato, file_name="email_pulite.txt")
-    with col_dl2:
+    c1, c2, c3 = st.columns([1,1,1])
+    with c1:
+        st.download_button("📥 Scarica Lista", data=st.session_state.risultato, file_name="email_pulite.txt")
+    with c2:
         st.download_button("🧾 Scarica Log", data=st.session_state.log, file_name="log_duplicati.txt")
-    with col_dl3:
-        if st.button("🔄 Nuova Analisi"):
+    with c3:
+        if st.button("🔄 Nuova Elaborazione"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
 
-st.markdown('<div class="footer"><b>Regione Liguria</b><br>Tool Digitale Gestione Mailing List</div>', unsafe_allow_html=True)
+# Footer
+st.markdown(
+    """
+    <div class="footer">
+        <b>Regione Liguria</b><br>
+        <i>Tool Digitale per la Gestione Mailing List by MasiTuo</i>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)

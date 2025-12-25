@@ -21,7 +21,7 @@ def get_base64_image(image_path):
 img_bg_base64 = get_base64_image("no.png")
 logo_liguria_path = "Logo Liguria.png"
 
-# 3. CSS Avanzato (Sfondo visibile, UI Dinamica e Caricamento accattivante)
+# 3. CSS Avanzato (Migliorata leggibilità e visibilità sfondo)
 def apply_custom_style():
     bg_style = ""
     if img_bg_base64:
@@ -38,26 +38,24 @@ def apply_custom_style():
     
     st.markdown(bg_style + """
         <style>
-        /* Pannello centrale con trasparenza elegante */
+        /* Pannello centrale: aumentata opacità per contrastare lo sfondo molto visibile */
         .main .block-container {
-            background-color: rgba(255, 255, 255, 0.85);
+            background-color: rgba(255, 255, 255, 0.94); 
             padding: 3rem;
             border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             margin-top: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(22, 101, 52, 0.2);
         }
 
-        /* Titoli Istituzionali */
         h1 { color: #166534 !important; font-weight: 800 !important; text-align: center; }
         .subtitle { text-align: center; color: #15803d; font-style: italic; margin-bottom: 2rem; }
         
-        /* Area Upload Accattivante */
+        /* Area Upload */
         [data-testid="stFileUploadDropzone"] {
             border: 2px dashed #166534 !important;
-            background-color: rgba(22, 101, 52, 0.05) !important;
+            background-color: rgba(255, 255, 255, 0.5) !important;
             border-radius: 15px !important;
-            padding: 2rem !important;
         }
 
         /* Bottoni */
@@ -69,20 +67,6 @@ def apply_custom_style():
             font-weight: bold;
             width: 100%;
             border: none;
-            transition: all 0.3s ease;
-        }
-        .stButton>button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(22, 101, 52, 0.3);
-        }
-
-        /* Box di testo Risultato */
-        textarea {
-            background-color: #ffffff !important;
-            color: #1e293b !important;
-            font-family: 'Consolas', monospace !important;
-            border: 2px solid #166534 !important;
-            border-radius: 10px !important;
         }
 
         /* Footer */
@@ -107,26 +91,29 @@ with col_l2:
 st.markdown("<h1>📬 EMAIL EXTRACTOR PRO</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Regione Liguria - Elaborazione Liste Contatti</p>", unsafe_allow_html=True)
 
-# --- LOGICA DI NAVIGAZIONE ---
-# Usiamo lo stato della sessione per "nascondere" i pezzi
-if 'file_elaborato' not in st.session_state:
-    st.session_state.file_elaborato = False
+# --- GESTIONE STATO SESSIONE ---
+if 'file_caricato' not in st.session_state:
+    st.session_state.file_caricato = False
+if 'elaborazione_conclusa' not in st.session_state:
+    st.session_state.elaborazione_conclusa = False
 
-# PASSO 1: CARICAMENTO (Scompare se il file è presente)
-if 'df' not in st.session_state:
+# STEP 1: CARICAMENTO (Scompare dopo il caricamento)
+if not st.session_state.file_caricato:
     st.markdown("### 📤 Caricamento Documento")
-    uploaded_file = st.file_uploader("Trascina qui il tuo file Excel istituzionale", type="xlsx")
-    if uploaded_file:
+    uploaded_file = st.file_uploader("Trascina qui il tuo file Excel (.xlsx)", type="xlsx")
+    if uploaded_file is not None:
         st.session_state.df = pd.read_excel(uploaded_file)
-        st.rerun() # Ricarica per nascondere l'upload
+        st.session_state.file_caricato = True
+        st.rerun()
 
-# PASSO 2: CONFIGURAZIONE (Scompare se abbiamo già cliccato Elabora)
-if 'df' in st.session_state and not st.session_state.file_elaborato:
-    st.info(f"✅ File pronto: {len(st.session_state.df)} righe rilevate.", icon="📂")
-    st.markdown("### 🎯 Selezione Colonna")
-    colonna = st.selectbox("Scegli la colonna che contiene gli indirizzi:", st.session_state.df.columns, index=min(3, len(st.session_state.df.columns)-1))
+# STEP 2: CONFIGURAZIONE (Scompare dopo il click su Elabora)
+if st.session_state.file_caricato and not st.session_state.elaborazione_conclusa:
+    st.info(f"✅ File caricato: {len(st.session_state.df)} righe rilevate.", icon="📂")
+    
+    colonna = st.selectbox("Seleziona la colonna delle Email:", st.session_state.df.columns, index=min(3, len(st.session_state.df.columns)-1))
     
     if st.button("🚀 ELABORA E GENERA LISTA"):
+        # Logica di estrazione
         emails_raw = st.session_state.df[colonna].dropna().astype(str)
         seen = set()
         unique_emails = []
@@ -142,22 +129,22 @@ if 'df' in st.session_state and not st.session_state.file_elaborato:
         
         unique_emails.sort(key=lambda x: (x.split("@")[1] if "@" in x else "", x))
         
-        # Salviamo i risultati nello stato per mostrarli al passo 3
+        # Salvataggio dati finali
         st.session_state.risultato = ", ".join(unique_emails)
         st.session_state.log = "\n".join(log_entries)
         st.session_state.count_uniche = len(unique_emails)
         st.session_state.count_duplicati = len(log_entries)-1
-        st.session_state.file_elaborato = True
+        st.session_state.elaborazione_conclusa = True
         st.rerun()
 
-# PASSO 3: RISULTATO FINALE (Visibile solo alla fine)
-if st.session_state.file_elaborato:
+# STEP 3: RISULTATO FINALE
+if st.session_state.elaborazione_conclusa:
     st.balloons()
-    st.success("✨ Elaborazione completata con successo!")
+    st.success("✨ Lista Email pronta!")
     
-    col_res1, col_res2 = st.columns(2)
-    col_res1.metric("Email Uniche", st.session_state.count_uniche)
-    col_res2.metric("Duplicati Rimossi", st.session_state.count_duplicati)
+    c1, c2 = st.columns(2)
+    c1.metric("Email Uniche", st.session_state.count_uniche)
+    c2.metric("Duplicati Rimossi", st.session_state.count_duplicati)
     
     st.markdown("### 📋 Seleziona tutto (CTRL + A) e copia")
     st.text_area(label="Indirizzi pronti per l'invio:", value=st.session_state.risultato, height=150)
@@ -165,25 +152,17 @@ if st.session_state.file_elaborato:
     st.divider()
     
     # Pulsanti Download
-    c1, c2, c3 = st.columns([1,1,1])
-    with c1:
+    col_d1, col_d2, col_d3 = st.columns(3)
+    with col_d1:
         st.download_button("📥 Scarica Lista", data=st.session_state.risultato, file_name="email_pulite.txt")
-    with c2:
+    with col_d2:
         st.download_button("🧾 Scarica Log", data=st.session_state.log, file_name="log_duplicati.txt")
-    with c3:
-        if st.button("🔄 Nuova Elaborazione"):
-            # Resettiamo tutto
+    with col_d3:
+        if st.button("🔄 Nuova Analisi"):
+            # Reset totale
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
 
 # Footer
-st.markdown(
-    """
-    <div class="footer">
-        <b>Regione Liguria</b><br>
-        <i>Tool Digitale per la Gestione Mailing List</i>
-    </div>
-    """, 
-    unsafe_allow_html=True
-)
+st.markdown("<div class='footer'><b>Regione Liguria</b><br>Tool Digitale Mailing List</div>", unsafe_allow_html=True)

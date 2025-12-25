@@ -15,15 +15,16 @@ st.set_page_config(
 orange_req = "rgb(255, 165, 0)"  # Arancione Pilli (255, 165, 0)
 green_liguria = "#1E8449"         # Verde Istituzionale Liguria
 
-# 2. Funzione per codificare le immagini in Base64
-def get_base64_image(image_path):
-    if os.path.exists(image_path):
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
+# 2. Funzione generica per codificare file (Immagini e Audio) in Base64
+def get_base64_file(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
     return None
 
-img_bg_base64 = get_base64_image("no.png")
-pilly_base64 = get_base64_image("pilli.jpg")
+img_bg_base64 = get_base64_file("no.png")
+pilly_base64 = get_base64_file("pilli.jpg")
+audio_base64 = get_base64_file("C'e' chi dice no.mp3") # Caricamento Audio
 logo_liguria_path = "Logo Liguria.png"
 
 # 3. CSS Personalizzato
@@ -113,6 +114,12 @@ def apply_custom_style():
             border-top: 1px solid {green_liguria};
             padding-top: 1rem;
         }}
+        
+        /* CSS per Sidebar (Audio) */
+        [data-testid="stSidebar"] {{
+            background-color: rgba(255, 255, 255, 0.9);
+            border-right: 2px solid {orange_req};
+        }}
         </style>
     """, unsafe_allow_html=True)
 
@@ -153,6 +160,27 @@ if not st.session_state.christmas_message_shown:
             st.rerun()
     st.stop()
 
+# --- GESTIONE AUDIO DI SOTTOFONDO ---
+# Questa sezione appare solo nell'App Principale (dopo l'intro)
+if audio_base64:
+    with st.sidebar:
+        st.markdown(f"<h3 style='color:{orange_req}; text-align:center;'>🎵 MUSIC PLAYER</h3>", unsafe_allow_html=True)
+        # Toggle per attivare/disattivare
+        audio_on = st.toggle("🔊 C'è chi dice no (Vasco)", value=True)
+        
+        if audio_on:
+            # HTML Audio nascosto in autoplay e loop
+            audio_html = f"""
+                <audio autoplay loop>
+                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+                Your browser does not support the audio element.
+                </audio>
+            """
+            st.markdown(audio_html, unsafe_allow_html=True)
+            st.caption("🎶 Musica attiva in background")
+        else:
+            st.caption("🔇 Musica disattivata")
+
 # --- INTERFACCIA APP PRINCIPALE ---
 col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
 with col_l2:
@@ -170,11 +198,10 @@ if 'elaborazione_conclusa' not in st.session_state:
 # STEP 1: UPLOAD
 if not st.session_state.file_caricato:
     st.markdown(f'<div class="instruction-badge">🎅 CARICA IL FILE EXCEL DI NATALE 🎄</div>', unsafe_allow_html=True)
-    # MODIFICA IMPORTANTE: Aggiunto type=["xlsx", "xls"] per compatibilità Android
     uploaded_file = st.file_uploader("", type=["xlsx", "xls"])
     if uploaded_file is not None:
         try:
-            st.session_state.df = pd.read_excel(uploaded_file) # engine='openpyxl' rimosso per max compatibilità o lasciato default
+            st.session_state.df = pd.read_excel(uploaded_file) 
             st.session_state.file_caricato = True
             st.rerun()
         except Exception as e:
@@ -213,7 +240,7 @@ if st.session_state.elaborazione_conclusa:
     st.balloons()
     st.markdown(f'<div class="instruction-badge">🎁 LISTA PRONTA! COPIA E INCOLLA 🎁</div>', unsafe_allow_html=True)
     
-    # --- NUOVA BOX ISTRUZIONI AGGIUNTA QUI (Design Integrato) ---
+    # --- BOX ISTRUZIONI ---
     st.markdown(f"""
         <div class="copy-text-box">
             <b>ISTRUZIONI RAPIDE:</b><br>
@@ -221,7 +248,6 @@ if st.session_state.elaborazione_conclusa:
             Vai sul client di posta e premi <b>Control+V</b> per incollare la lista delle mail.
         </div>
     """, unsafe_allow_html=True)
-    # -------------------------------------------------------------
 
     st.text_area(label="", value=st.session_state.risultato, height=180)
     

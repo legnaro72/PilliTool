@@ -6,14 +6,14 @@ from datetime import datetime
 
 # 1. Configurazione della Pagina
 st.set_page_config(
-    page_title="Email Extractor Pro - Liguria", 
+    page_title="Email Extractor Pro - Pilli by MassiTuo", 
     page_icon="🎄", 
     layout="centered"
 )
 
 # --- DEFINIZIONE COLORI GLOBALI ---
-orange_req = "rgb(255, 165, 0)"  # Arancione Pilli (255, 165, 0)
-green_liguria = "#1E8449"         # Verde Istituzionale Liguria
+orange_req = "rgb(255, 165, 0)"
+green_liguria = "#1E8449"
 
 # 2. Funzione generica per codificare file (Immagini e Audio) in Base64
 def get_base64_file(file_path):
@@ -24,7 +24,7 @@ def get_base64_file(file_path):
 
 img_bg_base64 = get_base64_file("no.png")
 pilly_base64 = get_base64_file("pilli.jpg")
-audio_base64 = get_base64_file("C'e' chi dice no.mp3") # Caricamento Audio
+audio_base64 = get_base64_file("C'e' chi dice no.mp3") 
 logo_liguria_path = "Logo Liguria.png"
 
 # 3. CSS Personalizzato
@@ -62,7 +62,7 @@ def apply_custom_style():
             margin-bottom: 0.5rem;
         }}
 
-        /* Badge Istruzioni: Sfondo Verde, Testo Arancione */
+        /* Badge Istruzioni */
         .instruction-badge {{
             background-color: {green_liguria} !important;
             border: 2px solid {orange_req};
@@ -76,19 +76,19 @@ def apply_custom_style():
             text-align: center;
         }}
         
-        /* NUOVO CSS PER IL BOX DI TESTO ISTRUZIONI (Stile Pilli) */
+        /* Box Istruzioni Copia */
         .copy-text-box {{
-            background-color: #fff8e1; /* Sfondo crema molto chiaro */
+            background-color: #fff8e1;
             border-left: 6px solid {orange_req};
             padding: 15px;
             margin-bottom: 10px;
-            color: #d97706; /* Arancione scuro per leggibilità */
+            color: #d97706;
             font-size: 0.95rem;
             border-radius: 5px;
             line-height: 1.5;
         }}
 
-        /* Bottoni Verdi con testo bianco */
+        /* Bottoni */
         div.stButton > button, .stDownloadButton > button {{
             background-color: {green_liguria} !important;
             color: white !important;
@@ -100,7 +100,7 @@ def apply_custom_style():
             border: 1px solid {orange_req};
         }}
         
-        /* Metriche Arancioni */
+        /* Metriche */
         [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{
             color: {orange_req} !important;
             font-weight: 900 !important;
@@ -115,7 +115,7 @@ def apply_custom_style():
             padding-top: 1rem;
         }}
         
-        /* CSS per Sidebar (Audio) */
+        /* Sidebar */
         [data-testid="stSidebar"] {{
             background-color: rgba(255, 255, 255, 0.9);
             border-right: 2px solid {orange_req};
@@ -125,12 +125,31 @@ def apply_custom_style():
 
 apply_custom_style()
 
+# --- GESTIONE AUDIO DI SOTTOFONDO (SPOSTATO QUI IN ALTO) ---
+# In questo modo parte subito, anche nella schermata di auguri
+if audio_base64:
+    with st.sidebar:
+        st.markdown(f"<h3 style='color:{orange_req}; text-align:center;'>🎵 MUSIC PLAYER</h3>", unsafe_allow_html=True)
+        audio_on = st.toggle("🔊 C'è chi dice no (Vasco)", value=True)
+        
+        if audio_on:
+            audio_html = f"""
+                <audio autoplay loop>
+                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+                Your browser does not support the audio element.
+                </audio>
+            """
+            st.markdown(audio_html, unsafe_allow_html=True)
+            st.caption("🎶 Musica attiva")
+        else:
+            st.caption("🔇 Musica disattivata")
+
 # --- MESSAGGIO DI AUGURI INIZIALE ---
 if 'christmas_message_shown' not in st.session_state:
     st.session_state.christmas_message_shown = False
 
 if not st.session_state.christmas_message_shown:
-    st.snow() # Fiocchi di neve che cadono ❄️
+    st.snow()
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if pilly_base64:
@@ -158,28 +177,7 @@ if not st.session_state.christmas_message_shown:
         if st.button("🎁 APRI IL TUO STRUMENTO DI LAVORO 🎁"):
             st.session_state.christmas_message_shown = True
             st.rerun()
-    st.stop()
-
-# --- GESTIONE AUDIO DI SOTTOFONDO ---
-# Questa sezione appare solo nell'App Principale (dopo l'intro)
-if audio_base64:
-    with st.sidebar:
-        st.markdown(f"<h3 style='color:{orange_req}; text-align:center;'>🎵 MUSIC PLAYER</h3>", unsafe_allow_html=True)
-        # Toggle per attivare/disattivare
-        audio_on = st.toggle("🔊 C'è chi dice no (Vasco)", value=True)
-        
-        if audio_on:
-            # HTML Audio nascosto in autoplay e loop
-            audio_html = f"""
-                <audio autoplay loop>
-                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-                Your browser does not support the audio element.
-                </audio>
-            """
-            st.markdown(audio_html, unsafe_allow_html=True)
-            st.caption("🎶 Musica attiva in background")
-        else:
-            st.caption("🔇 Musica disattivata")
+    st.stop() # Ferma l'esecuzione qui finché non si preme il bottone
 
 # --- INTERFACCIA APP PRINCIPALE ---
 col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
@@ -201,7 +199,7 @@ if not st.session_state.file_caricato:
     uploaded_file = st.file_uploader("", type=["xlsx", "xls"])
     if uploaded_file is not None:
         try:
-            st.session_state.df = pd.read_excel(uploaded_file) 
+            st.session_state.df = pd.read_excel(uploaded_file)
             st.session_state.file_caricato = True
             st.rerun()
         except Exception as e:
@@ -240,7 +238,6 @@ if st.session_state.elaborazione_conclusa:
     st.balloons()
     st.markdown(f'<div class="instruction-badge">🎁 LISTA PRONTA! COPIA E INCOLLA 🎁</div>', unsafe_allow_html=True)
     
-    # --- BOX ISTRUZIONI ---
     st.markdown(f"""
         <div class="copy-text-box">
             <b>ISTRUZIONI RAPIDE:</b><br>
@@ -269,4 +266,4 @@ if st.session_state.elaborazione_conclusa:
                 del st.session_state[key]
             st.rerun()
 
-st.markdown(f"<div class='footer'>🎅 REGIONE LIGURIA - BUONE FESTE PILLI! 🎄</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='footer'>🎅 BUONE FESTE PILLI! DA MASSITUO 🎄</div>", unsafe_allow_html=True)
